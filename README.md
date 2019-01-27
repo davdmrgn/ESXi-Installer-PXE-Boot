@@ -16,11 +16,11 @@
 
 * Install Ubuntu 18.04.1
 * Update Ubuntu `sudo apt update && sudo apt upgrade -y`
+* Remove unnecessary packages `sudo apt autoremove -y`
 
 ## Install Required Packages
 
 * Install dhcp server, tftp `sudo apt install tftp-hpa tftpd-hpa isc-dhcp-server -y`
-* Remove unnecessary packages `sudo apt autoremove -y`
 * Back up dhcp config file `sudo cp /etc/dhcp/dhcpd.conf /etc/dhcp/dhcpd.conf.orig`
 * Back up dhcp interface file `sudo cp /etc/default/isc-dhcp-server /etc/default/isc-dhcp-server.orig`
 * Back up tftp config file `sudo cp /etc/default/tftpd-hpa /etc/default/tftpd-hpa.orig`
@@ -34,50 +34,49 @@
 
 ## Verify TFTP configuration
 
-* Edit/View tftpd-hpa: `sudo nano /etc/default/tftpd-hpa`
+* Verify tftpd-hpa: `cat /etc/default/tftpd-hpa`
 
-``` bash
-TFTP_USERNAME="tftp"
-TFTP_DIRECTORY="/var/lib/tftpboot"
-TFTP_ADDRESS=":69"
-TFTP_OPTIONS="--secure"
-```
+  ``` bash
+  TFTP_USERNAME="tftp"
+  TFTP_DIRECTORY="/var/lib/tftpboot"
+  TFTP_ADDRESS=":69"
+  TFTP_OPTIONS="--secure"
+  ```
 
-* Restart TFTP service: `sudo service tftpd-hpa restart`
+* Restart TFTP service (if needed): `sudo service tftpd-hpa restart`
 
 ## Verify DHCP Configuration
 
 * Edit dhcpd.conf for a specific hardware type: `sudo nano /etc/dhcp/dhcpd.conf`
 
-``` bash
-option domain-name "lan";
-option domain-name-servers 192.168.86.1;
-default-lease-time 3600;
-max-lease-time 3600;
-ddns-update-style none;
-not authoritative;
-allow booting;
-allow bootp;
-filename = "/efi/boot/bootx64.efi";
+  ``` bash
+  sudo cat > /etc/dhcp/dhcpd.conf << EOF
+  option domain-name "lan";
+  option domain-name-servers 192.168.86.1;
+  default-lease-time 3600;
+  max-lease-time 3600;
+  ddns-update-style none;
+  not authoritative;
+  allow booting;
+  allow bootp;
+  filename = "/efi/boot/bootx64.efi";
 
-class "VMware" {
-  match if substring(option vendor-class-identifier, 0, 20) = "PXEClient:Arch:00007";
-}
-
-subnet 192.168.86.0 netmask 255.255.255.0 {
-  pool {
-    allow members of "VMware";
-    range dynamic-bootp 192.168.86.100 192.168.86.199;
-    option broadcast-address 192.168.86.255;
-    option routers 192.168.86.1;
+  class "VMware" {
+    match if substring(option vendor-class-identifier, 0, 20) = "PXEClient:Arch:00007";
   }
-}
-```
 
-* View interface names, taking note of the primary adapter used for PXE clients: `ip addr`
-* Edit isc-dhcp-server: `sudo nano /etc/default/isc-dhcp-server`
-  * Update this line with the interface name: `INTERFACESv4="ensxxx"`
-* Restart DHCP service: `sudo service isc-dhcp-server restart`
+  subnet 192.168.86.0 netmask 255.255.255.0 {
+    pool {
+      allow members of "VMware";
+      range dynamic-bootp 192.168.86.100 192.168.86.199;
+      option broadcast-address 192.168.86.255;
+      option routers 192.168.86.1;
+    }
+  }
+  EOF
+  ```
+
+* Start/Restart DHCP service: `sudo service isc-dhcp-server restart`
 
 ## Additional Notes
 
@@ -114,4 +113,4 @@ subnet 192.168.86.0 netmask 255.255.255.0 {
 Edit boot.cfg kernelopt to include kickstart path
 
 * Back up boot.cfg file `sudo cp /var/lib/tftpboot/efi/boot/boot.cfg /var/lib/tftpboot/efi/boot/boot.cfg.orig`
-* Edit the kernelopt line to include kickstart file from NFS share `kernelopt=ks=nfs://NFS-SERVER-NAME-OR-IP/Users/Shared/nfs/esxi.ks`
+* Edit the kernelopt line to include kickstart file from NFS share `sudo sed -i 's/runweasel/ks=nfs:\/\/NFS-SERVER-NAME-OR-IP\/Users\/Shared\/nfs\/esxi.ks/g' /var/lib/tftpboot/efi/boot/boot.cfg`
