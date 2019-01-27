@@ -30,6 +30,7 @@
 
 * Mount ESXi installer `sudo mount /dev/cdrom /mnt`
 * Copy ESXi installer to TFTP directory `sudo cp -rf /mnt/* /var/lib/tftpboot`
+* Unmount ESXi CDROM `sudo umount /mnt`
 
 ## Verify TFTP configuration
 
@@ -46,29 +47,36 @@ TFTP_OPTIONS="--secure"
 
 ## Verify DHCP Configuration
 
-* Edit dhcpd.conf: `sudo nano /etc/dhcp/dhcpd.conf`
+* Edit dhcpd.conf for a specific hardware type: `sudo nano /etc/dhcp/dhcpd.conf`
 
 ``` bash
-option domain-name "vsphere.local";
-option domain-name-servers 192.168.x.1;
-default-lease-time 600;
-max-lease-time 7200;
+option domain-name "lan";
+option domain-name-servers 192.168.86.1;
+default-lease-time 3600;
+max-lease-time 3600;
 ddns-update-style none;
-authoritative;
-
-subnet 192.168.x.0 netmask 255.255.255.0 {
-  range dynamic-bootp 192.168.x.10 192.168.x.250;
-  option broadcast-address 192.168.x.255;
-  option routers 192.168.x.254;
-}
-
+not authoritative;
 allow booting;
 allow bootp;
 filename = "/efi/boot/bootx64.efi";
+
+class "VMware" {
+  match if substring(option vendor-class-identifier, 0, 20) = "PXEClient:Arch:00007";
+}
+
+subnet 192.168.86.0 netmask 255.255.255.0 {
+  pool {
+    allow members of "VMware";
+    range dynamic-bootp 192.168.86.100 192.168.86.199;
+    option broadcast-address 192.168.86.255;
+    option routers 192.168.86.1;
+  }
+}
 ```
 
+* View interface names, taking note of the primary adapter used for PXE clients: `ip addr`
 * Edit isc-dhcp-server: `sudo nano /etc/default/isc-dhcp-server`
-  * Update this line with the interface name: `INTERFACESv4="ens192"`
+  * Update this line with the interface name: `INTERFACESv4="ensxxx"`
 * Restart DHCP service: `sudo service isc-dhcp-server restart`
 
 ## Additional Notes
@@ -80,7 +88,7 @@ filename = "/efi/boot/bootx64.efi";
   * 2 vCPU
   * 4 GB RAM
   * 1 NIC (Bridged)
-  * 4 GB HD
+  * 2 GB HD
 
 #### Configure NFS Export for Kickstart File Hosting on MacOS
 
@@ -100,3 +108,10 @@ filename = "/efi/boot/bootx64.efi";
 
 * Boot ESXi VM to 6.7 installer
 * At boot, press SHIFT+O to apply boot options, deleting the existing options: `netdevice=vmnic0 bootproto=dhcp ks=nfs://NFS-SERVER-NAME-OR-IP/Users/Shared/nfs/esxi.ks`
+
+#### Deploy ESXi from PXE Boot using Kickstart File
+
+Edit boot.cfg kernelopt to include kickstart path
+
+* Back up boot.cfg file `sudo cp /var/lib/tftpboot/efi/boot/boot.cfg /var/lib/tftpboot/efi/boot/boot.cfg.orig`
+* Edit the kernelopt line to include kickstart file from NFS share `kernelopt=ks=nfs://NFS-SERVER-NAME-OR-IP/Users/Shared/nfs/esxi.ks`
