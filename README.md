@@ -1,5 +1,5 @@
 # ESXi Installer PXE Boot
-* Based on ESXi 6.7 (Reference)[https://docs.vmware.com/en/VMware-vSphere/6.7/com.vmware.esxi.install.doc/GUID-21FF3053-F77C-49E6-81A2-9369B85F5D52.html]
+* Based on ESXi 6.7 [Reference](https://docs.vmware.com/en/VMware-vSphere/6.7/com.vmware.esxi.install.doc/GUID-21FF3053-F77C-49E6-81A2-9369B85F5D52.html)
 
 
 ## Hardware Requirements
