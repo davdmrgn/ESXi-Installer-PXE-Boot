@@ -42,6 +42,7 @@ TFTP_OPTIONS="--secure"
 
 * Restart TFTP service: `sudo service tftpd-hpa restart`
 
+
 ## Verify DHCP Configuration
 * Edit dhcpd.conf: `sudo nano /etc/dhcp/dhcpd.conf`
 ```
@@ -68,3 +69,75 @@ filename = "/efi/boot/bootx64.efi";
 * Restart DHCP service: `sudo service isc-dhcp-server restart`
 
 
+## Additional Notes
+
+### ESXi Remote Kickstart in Home Lab
+* VMware Fusion 11 on Mojave
+* ESXi 6.7 running in VMware Fusion
+  * 2 vCPU
+  * 4 GB RAM
+  * 1 NIC (Bridged)
+  * 4 GB HD
+
+#### Configure NFS Export for Kickstart File Hosting on MacOS
+* On macOS, open Terminal
+* Create/Edit exports file: `sudo nano /etc/exports`
+    * Add a line with the path to the kickstart file with the appropriate network information: `/Users/Shared/nfs -maproot=root:wheel -network 192.168.1.0 -mask 255.255.255.0`
+* Restart/Start nfsd service: `sudo nfsd restart`
+* Check exports on local machine: `showmount -e`
+* Check exports from remote machine: `showmount -e NFS-SERVER-NAME`
+
+#### Create ESXi Kickstart File
+```
+# Accept the VMware End User License Agreement
+vmaccepteula
+
+# Clear paritions and install
+clearpart --firstdisk --overwritevmfs
+install --firstdisk --overwritevmfs
+
+# Set the root password to 'vmware'
+rootpw --iscrypted $1$1K0mLlK/$IaFKhssy6EEhoAn7K9848.
+
+# Network Settings
+network --bootproto=dhcp --addvmportgroup=1
+reboot
+
+# Firstboot section 1
+%firstboot --interpreter=busybox
+sleep 10
+
+# Enter maintenance mode
+vim-cmd hostsvc/maintenance_mode_enter
+
+# Suppress shell warning
+esxcli system settings advanced set -o /UserVars/SuppressShellWarning -i 1
+esxcli system settings advanced set -o /UserVars/ESXiShellTimeOut -i 1
+
+# Add DNS Nameservers to /etc/resolv.conf
+#cat > /etc/resolv.conf << \DNS
+#nameserver 192.168.0.1
+#nameserver 192.168.0.2
+#DNS
+
+# vSwitch Configurations
+esxcli network vswitch standard add --vswitch-name=vSwitch0
+esxcli network vswitch standard uplink add --uplink-name=vmnic0 --vswitch-name=vSwitch0
+esxcli network vswitch standard add --vswitch-name=vSwitch1
+esxcli network vswitch standard portgroup add --portgroup-name="Internal Network" --vswitch-name=vSwitch1
+
+# Firstboot Section 2
+%firstboot --interpreter=busybox
+
+# Disable IPv6
+esxcli network ip set --ipv6-enabled=false
+
+# Reboot
+sleep 10
+reboot
+```
+* Save file to NFS export directory `/Users/Shared/nfs/esx.ks`
+
+#### Deploy ESXi
+* Boot ESXi VM to 6.7 installer
+* At boot, press SHIFT+O to apply boot options, deleting the existing options: `netdevice=vmnic0 bootproto=dhcp ks=nfs://NFS-SERVER-NAME-OR-IP/Users/Shared/nfs/esxi.ks`
