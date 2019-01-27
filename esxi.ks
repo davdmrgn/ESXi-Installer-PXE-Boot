@@ -28,7 +28,7 @@ esxcli system settings advanced set -o /UserVars/SuppressShellWarning -i 1  # Su
 vim-cmd hostsvc/enable_ssh  # Enable SSH
 vim-cmd hostsvc/enable_esx_shell  # Enable shell from console
 esxcli system settings advanced set -o /UserVars/HostClientCEIPOptIn -i 2  # CEIP opt-out
-MAC="esx-$(esxcli network nic get -n vmnic0 | grep 'Virtual Address:' | awk {'print $3'} | sed -r 's/://g')"  # Capture MAC address of vmnic0 without colons
+MAC="esx-$(esxcli network nic get -n vmnic0 | grep 'Virtual Address:' | awk {'print $3'} | sed -r 's/://g' | cut -c 9-12)"  # Capture end of MAC address of vmnic0 without colons
 esxcli system settings advanced set -o /Misc/PreferredHostName -s $MAC  # Set Hostname based on vmnic0 MAC address
 
 # vSwitch Configurations
