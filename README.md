@@ -117,3 +117,22 @@ Edit boot.cfg kernelopt to include kickstart path
 
 * Back up boot.cfg file `sudo cp /var/lib/tftpboot/efi/boot/boot.cfg /var/lib/tftpboot/efi/boot/boot.cfg.orig`
 * Edit the kernelopt line to include kickstart file from NFS share `sudo sed -i 's/runweasel/ks=nfs:\/\/NFS-SERVER-NAME-OR-IP\/Users\/Shared\/nfs\/esxi.ks/g' /var/lib/tftpboot/efi/boot/boot.cfg`
+
+## Deploy PSC from Mac via CLI Installer
+
+The instructions below creates a PSC VM with 2 vCPU, 4 GB RAM, ~60 GB disk space
+
+* Mount `VMware-VMvisor-Installer-6.x.x.x86_64` ISO
+* Copy and edit `/vcsa-cli-installer/templates/PSC_first_instance_on_ESXi.json` to a local path
+* From mounted CDROM, execute `/vcsa-cli-installer/mac/vcsa-deploy install ~/Downloads/PSC_first_instance_on_ESXi.json --accept-eula`
+* Wait for installation to complete
+* PSC requires reverse DNS entry for hostname
+
+## Deploy VCSA from Mac via CLI Installer
+
+The instructions below creates a VCSA VM with 2 vCPU, 10 GB RAM, ~230 GB disk space
+
+* Mount `VMware-VMvisor-Installer-6.x.x.x86_64` ISO
+* Copy and edit `/vcsa-cli-installer/templates/vCSA_on_ESXi.json` to a local path
+* From mounted CDROM, execute `/vcsa-cli-installer/mac/vcsa-deploy install ~/Downloads/vCSA_on_ESXi.json --accept-eula`
+* VCSA installation failed; most likely due to DNS

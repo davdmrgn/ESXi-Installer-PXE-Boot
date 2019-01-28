@@ -1,0 +1,32 @@
+{
+    "__version": "2.3.0",
+    "__comments": "Sample template to deploy a vCenter Server Appliance with an external Platform Services Controller on an ESXi host.",
+    "new.vcsa": {
+        "esxi": {
+            "hostname": "esx-52e5",
+            "username": "root",
+            "password": "vmware",
+            "deployment.network": "VM Network",
+            "datastore": "datastore-52e5"
+        },
+        "appliance": {
+            "thin.disk.mode": true,
+            "deployment.option": "management-tiny",
+            "name": "vcsa"
+        },
+        "network": {
+            "ip.family": "ipv4",
+            "mode": "dhcp"
+        },
+        "os": {
+            "password": "VMware123!",
+            "ssh.enable": true
+        },
+        "sso": {
+            "password": "VMware123!",
+            "domain-name": "vsphere.local",
+            "platform.services.controller": "192.168.86.47",
+            "sso.port": 443
+        }
+    }
+}
