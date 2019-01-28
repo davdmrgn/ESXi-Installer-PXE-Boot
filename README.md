@@ -94,6 +94,9 @@
 * On macOS, open Terminal
 * Create/Edit exports file: `sudo nano /etc/exports`
   * Add a line with the path to the kickstart file with the appropriate network information: `/Users/Shared/nfs -network 192.168.1.0 -mask 255.255.255.0`
+
+  `/Users/Shared/nfs -alldirs -mapall=0 -network 192.168.86.0 -mask 255.255.255.0`
+
 * Restart/Start nfsd service: `sudo nfsd restart`
 * Check exports on local machine: `showmount -e`
 * Check exports from remote machine: `showmount -e NFS-SERVER-NAME`

@@ -38,7 +38,7 @@ esxcli network vswitch standard add --vswitch-name=vSwitch1
 esxcli network vswitch standard portgroup add --portgroup-name="Internal Network" --vswitch-name=vSwitch1
 
 # Rename mounted datastore
-vim-cmd hostsvc/datastore/rename remote-install-location nfs
+#vim-cmd hostsvc/datastore/rename remote-install-location nfs
 
 # Disable IPv6
 esxcli network ip set --ipv6-enabled=false
