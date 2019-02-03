@@ -3,11 +3,11 @@
     "__comments": "Sample template to deploy a Platform Services Controller appliance as the first instance in a new vCenter Single Sign-On domain on an ESXi host.",
     "new.vcsa": {
         "esxi": {
-            "hostname": "esx-52e5",
+            "hostname": "esx.dm.lab",
             "username": "root",
-            "password": "vmware",
+            "password": "vmware1",
             "deployment.network": "VM Network",
-            "datastore": "datastore-52e5"
+            "datastore": "datastore1"
         },
         "appliance": {
             "thin.disk.mode": true,
@@ -16,7 +16,14 @@
         },
         "network": {
             "ip.family": "ipv4",
-            "mode": "dhcp"
+            "mode": "static",
+            "ip": "192.168.86.4",
+            "dns.servers": [
+                "192.168.86.3"
+            ],
+            "prefix": "24",
+            "gateway": "192.168.86.1",
+            "system.name": "psc.dm.lab"
         },
         "os": {
             "password": "VMware123!",
