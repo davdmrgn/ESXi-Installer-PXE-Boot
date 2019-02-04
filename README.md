@@ -49,3 +49,5 @@ The instructions below creates a VCSA VM with 2 vCPU, 10 GB RAM, ~230 GB disk sp
 * Copy and edit `/Volumes/CDROM/vcsa-cli-installer/templates/install//vCSA_on_ESXi.json`
 * From mounted CDROM, execute `/Volumes/CDROM/vcsa-cli-installer/mac/vcsa-deploy install ~/Git/ESXi-Installer-PXE-Boot/vCSA_on_ESXi.json --accept-eula`
 * Install finished successfully
+
+https://vspherecentral.vmware.com/path-finder/vsphere-6-7-topology-and-upgrade-planning-tool
